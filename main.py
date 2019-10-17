@@ -13,6 +13,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default=R'G:\Google 雲端硬碟\Learning\Coding\python\test\images')
     parser.add_argument('--save_dir', type=str, default=R'G:\Google 雲端硬碟\Learning\Coding\python\test\lm')
-    parser.add_argument('--manual', action='store_true', default=False)
+    parser.add_argument('--manual', action='store_true', default=True)
     args = parser.parse_args()
     main(args)

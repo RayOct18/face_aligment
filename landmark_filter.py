@@ -14,12 +14,12 @@ strat_index = 0
 
 def landmark_filter(csv_file, data_dir, manual=False):
     SET = ['r', 's']
-    save_dir = os.path.split(csv_file)
+    save_dir = os.path.split(csv_file)[0]
 
     lm_data = pd.read_csv(csv_file)
     db_len = len(lm_data)
 
-    def show_landmarks(self, image, landmarks):
+    def show_landmarks(image, landmarks):
         """Show image with landmarks"""
         plt.imshow(image)
         plt.scatter(landmarks[:, 0], landmarks[:, 1], s=10, marker='.', c='r')
@@ -38,9 +38,7 @@ def landmark_filter(csv_file, data_dir, manual=False):
             sub_folder = os.path.join(*sub_folder)
             lm_index = face_dataset.multi_face_landmark(filename, sub_folder)
             multi_lm = len(lm_index)
-            if multi_lm == 0:
-                continue
-            elif multi_lm > 1:
+            if multi_lm > 1:
                 if not manual:
                     points_dis = []
                     for i, idx in enumerate(lm_index):

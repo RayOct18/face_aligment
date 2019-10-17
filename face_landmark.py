@@ -21,6 +21,7 @@ class FaceLandmarksSet(object):
     def __getitem__(self, idx):
         img_name = self.landmarks_frame.iloc[idx, 1]
         sub_folder = self.landmarks_frame.iloc[idx, 0]
+        sub_folder = '' if np.isnan(sub_folder) else sub_folder
         img_root = os.path.join(self.root_dir, sub_folder, img_name)
         image = Image.open(img_root)
         image = image.convert('RGB')
