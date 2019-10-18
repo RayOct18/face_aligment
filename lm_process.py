@@ -17,6 +17,7 @@ class LandmarkProcessing():
         self.save_dir = save_dir
         self.date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M")
         self.face_dataset = None
+        self.record_name = os.path.join(self.save_dir, 'record_point.csv')
 
 
     def detector(self):
@@ -66,15 +67,17 @@ class LandmarkProcessing():
         return save_csv
 
     def filter(self, csv_file, manual=False):
-        strat_index = 0
+        start_index = 0
+        if os.path.isfile(self.record_name):
+            start_index = self.read_record()
         lm_data = pd.read_csv(csv_file)
         db_len = len(lm_data)
 
         self.face_dataset = FaceLandmarksSet(csv_file=csv_file, root_dir=self.data_dir)
         print('Start')
         for root, dirs, files in os.walk(self.data_dir):
-            # strat_index
-            for file_num, filename in enumerate(files[strat_index:]):
+            # start_index
+            for file_num, filename in enumerate(files[start_index:]):
                 fullname = os.path.join(root, filename)
                 sub_folder = self.get_subfolder(fullname, self.data_dir)
                 lm_index = self.face_dataset.multi_face_landmark(filename, sub_folder)
@@ -85,19 +88,15 @@ class LandmarkProcessing():
                         lm_data = self.auto_filter(lm_index, fullname, lm_data)
                     else:
                         save_name = 'manual_landmark_{}.csv'.format(self.date_time)
-                        lm_data = self.manual_filter(lm_index, fullname, db_len, lm_data, strat_index, file_num, save_name)
+                        lm_data = self.manual_filter(lm_index, fullname, db_len, lm_data, start_index, file_num, save_name)
 
+        if manual and os.path.isfile(self.record_name):
+            save_name = 'combine_landmark.csv'
+            lm_data = self.combine_csv(lm_data)
         save_file = os.path.join(self.save_dir, save_name)
         print('Save csv to {}'.format(save_file))
         lm_data.to_csv(save_file, index=False)
         return save_file
-
-    @staticmethod
-    def get_subfolder(fullname, dir):
-        sub_folder = fullname.split(dir)[-1].split(os.sep)
-        sub_folder = sub_folder[1:-1] if len(sub_folder) != 2 else ['']
-        sub_folder = os.path.join(*sub_folder)
-        return sub_folder
 
     def auto_filter(self, lm_index, fullname, lm_data):
         points_dis = []
@@ -119,8 +118,10 @@ class LandmarkProcessing():
         print('drop landmark index: {}'.format(lm_index))
         return lm_data
 
-    def manual_filter(self, lm_index, fullname, db_len, lm_data, strat_index, file_num, save_name):
+    def manual_filter(self, lm_index, fullname, db_len, lm_data, start_index, file_num, save_name):
         SET = ['r', 's']
+        if range(start_index) != 0:
+            lm_data.drop(lm_data.index[range(start_index)], inplace=True)
         def show_landmarks(image, landmarks):
             """Show image with landmarks"""
             plt.imshow(image)
@@ -150,15 +151,14 @@ class LandmarkProcessing():
                     plt.close()
                     continue
                 elif pick == 's':
-                    lm_data.drop(lm_data.index[range(strat_index)], inplace=True)
                     lm_data.drop(lm_data.index[range(file_num-1, len(lm_data))], inplace=True)
-                    print('Save csv to {}'.format(save_name))
-                    lm_data.to_csv(save_name, index=False)
                     save_file = os.path.join(self.save_dir, save_name)
+                    print('Save csv to {}'.format(save_file))
+                    lm_data.to_csv(save_file, index=False)
                     print('part of data save to {}'.format(save_file))
-                    record = open(os.path.join(self.save_dir, 'landmark_record.txt'), 'a')
-                    text = 'save path: {}, start_index: {}\n'.format(save_file, file_num)
-                    record.write(text)
+                    lm_data.to_csv(save_file, index=False)
+                    print('save path: {}, start_index: {}\n'.format(save_file, file_num))
+                    self.record_pause(save_file, file_num, start_index)
                     exit()
                 else:
                     pick = int(pick)
@@ -168,3 +168,31 @@ class LandmarkProcessing():
                     plt.close()
         return lm_data
 
+    def record_pause(self, save_file, file_num, start_index):
+        if not os.path.isfile(self.record_name):
+            df = pd.DataFrame({'save_path':[save_file], 'start_index': [file_num]})
+            df.to_csv(self.record_name, index=False)
+        else:
+            df = pd.read_csv(self.record_name)
+            df = df.append({'save_path':save_file, 'start_index': file_num + start_index}, ignore_index=True)
+            df.to_csv(self.record_name, index=False)
+
+    def read_record(self):
+        df = pd.read_csv(self.record_name)
+        start_index = df.iloc[-1,1]
+        return start_index
+
+    def combine_csv(self, lm_data):
+        df = pd.read_csv(self.record_name)
+        files = df.iloc[:,0]
+        for file in files:
+            temp = pd.read_csv(file)
+            lm_data = lm_data.append(temp)
+        return lm_data
+
+    @staticmethod
+    def get_subfolder(fullname, dir):
+        sub_folder = fullname.split(dir)[-1].split(os.sep)
+        sub_folder = sub_folder[1:-1] if len(sub_folder) != 2 else ['']
+        sub_folder = os.path.join(*sub_folder)
+        return sub_folder
