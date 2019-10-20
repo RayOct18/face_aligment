@@ -1,5 +1,5 @@
 import pandas as pd
-from PIL import Image
+import cv2
 import os
 import numpy as np
 
@@ -20,14 +20,14 @@ class FaceLandmarksSet(object):
 
     def __getitem__(self, idx):
         img_name = self.landmarks_frame.iloc[idx, 1]
+        detect_number = self.landmarks_frame.iloc[idx, 2]
         sub_folder = self.landmarks_frame.iloc[idx, 0]
         sub_folder = '' if np.isnan(sub_folder) else sub_folder
         img_root = os.path.join(self.root_dir, sub_folder, img_name)
-        image = Image.open(img_root)
-        image = image.convert('RGB')
+        image = cv2.imread(img_root)
         landmarks = self.landmarks_frame.iloc[idx, 3:].values
         landmarks = landmarks.astype('float').reshape(-1, 2)
-        sample = {'image': image, 'landmarks': landmarks}
+        sample = {'image': image, 'landmarks': landmarks, 'name':img_name, 'folder': sub_folder, 'detect_num':detect_number}
 
         return sample
 

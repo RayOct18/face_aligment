@@ -1,6 +1,6 @@
 import face_alignment
 import os
-from PIL import Image
+import cv2
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +14,9 @@ import copy
 class LandmarkProcessing():
     def __init__(self, data_dir, save_dir):
         self.data_dir = data_dir
-        self.save_dir = save_dir
+        self.save_dir = os.path.join(save_dir, 'lm')
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
         self.date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M")
         self.face_dataset = None
         self.record_name = os.path.join(self.save_dir, 'record_point.csv')
@@ -33,8 +35,8 @@ class LandmarkProcessing():
                 for filename in files:
                     try:
                         fullname = os.path.join(root, filename)
-                        img = Image.open(fullname)
-                        img = img.convert('RGB')
+                        img = cv2.imread(fullname)
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                         preds = fa.get_landmarks(np.asarray(img))
 
                         if preds is None:
@@ -102,7 +104,7 @@ class LandmarkProcessing():
         points_dis = []
         for idx in lm_index:
             sample = self.face_dataset[idx]
-            img_size = sample['image'].size
+            img_size = sample['image'].shape
             lm_temp = copy.deepcopy(sample['landmarks'])
             lm_temp[:,0][lm_temp[:,0]<0] = 0
             lm_temp[:,1][lm_temp[:,1]<0] = 0
@@ -124,6 +126,7 @@ class LandmarkProcessing():
             lm_data.drop(lm_data.index[range(start_index)], inplace=True)
         def show_landmarks(image, landmarks):
             """Show image with landmarks"""
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             plt.imshow(image)
             plt.scatter(landmarks[:, 0], landmarks[:, 1], s=10, marker='.', c='r')
             plt.pause(0.0001)  # pause a bit so that plots are updated
@@ -134,7 +137,7 @@ class LandmarkProcessing():
             # plt.tight_layout()
             ax.set_title('#{}'.format(i))
             ax.axis('off')
-            show_landmarks(**sample)
+            show_landmarks(sample['image'], sample['landmarks'])
 
             if i+1 == len(lm_index):
                 plt.show()
