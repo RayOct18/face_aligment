@@ -147,9 +147,9 @@ class LandmarkProcessing():
                 plt.pause(0.0001)
                 print('{}'.format(fullname))
                 print('{}/{}'.format(max(lm_index), db_len))
-                pick = input('pick the correct landmark up (r to remove all): ')
+                pick = input('pick the correct landmark up (r to remove all, s to save a temporary file): ')
                 while not pick.isdigit() and not pick in SET:
-                    pick = input('pick the correct landmark up (r to remove all): ')
+                    pick = input('pick the correct landmark up (r to remove all, s to save a temporary file): ')
 
                 if pick == 'r':
                     lm_data.drop(lm_index, inplace=True)
