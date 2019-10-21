@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 
 def black_filter(data_dir, blk, img_size, mode):
+    print('Filter ratio of black area higher than {}%\n'.format(blk))
     for root, dirs, files in os.walk(data_dir):
         for filename in files:
             fullname = os.path.join(root, filename)
@@ -21,9 +22,10 @@ def black_filter(data_dir, blk, img_size, mode):
             if ratio > blk:
                 trg = os.path.join(black_dir, os.path.split(fullname)[-1])
                 shutil.move(fullname, trg)
-                print(trg)
+                # print(trg)
 
 def blur_filter(data_dir, blr, img_size, mode):
+    print('Filter Laplacian value of blur images lower than {}%\n'.format(blr))
     for root, dirs, files in os.walk(data_dir):
         for filename in files:
             fullname = os.path.join(root, filename)
@@ -39,4 +41,4 @@ def blur_filter(data_dir, blr, img_size, mode):
             if fm < blr:
                 trg = os.path.join(blr_dir, os.path.split(fullname)[-1])
                 shutil.move(fullname, trg)
-                print(trg)
+                # print(trg)

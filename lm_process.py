@@ -27,6 +27,8 @@ class LandmarkProcessing():
         data = []
         fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
 
+        print('Start detect facial landmark!')
+
         header = ['sub_folder', 'image_name', 'detect_number']
         for i in range(68):
             header += ['part_{}_x'.format(i), 'part_{}_y'.format(i)]
@@ -77,7 +79,7 @@ class LandmarkProcessing():
         db_len = len(lm_data)
 
         self.face_dataset = FaceLandmarksSet(csv_file=csv_file, root_dir=self.data_dir)
-        print('Start')
+        print('Start filter multiple landmark!\n')
         for root, dirs, files in os.walk(self.data_dir):
             # start_index
             for file_num, filename in enumerate(files[start_index:]):
@@ -97,7 +99,7 @@ class LandmarkProcessing():
             save_name = 'combine_landmark.csv'
             lm_data = self.combine_csv(lm_data)
         save_file = os.path.join(self.save_dir, save_name)
-        print('Save csv to {}'.format(save_file))
+        print('Save csv to {}\n'.format(save_file))
         lm_data.to_csv(save_file, index=False)
         return save_file
 

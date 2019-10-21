@@ -29,6 +29,9 @@ class ImageProcessing():
         for i in range(68):
             header += ['part_{}_x'.format(i), 'part_{}_y'.format(i)]
 
+        print('Start align facial images!')
+        print('Save images to {}'.format(img_dir))
+
         for i in range(len(self.face_dataset)):
             sample = self.face_dataset[i]
             lm = sample['landmarks'] + self.pad_size
@@ -51,10 +54,9 @@ class ImageProcessing():
             save_name = os.path.join(save_name, sample['name'])
             cv2.imwrite(save_name, warped)
 
-        save_lm = os.path.join(self.save_dir, 'lm')
-        if not os.path.exists(save_lm):
-            os.makedirs(save_lm)
-        save_csv = os.path.join(save_lm, 'cropped_landmark_{}_{}.csv'.format(mode, img_size))
+        save_lm = os.path.split(self.save_dir)[0]
+        save_csv = os.path.join(save_lm, 'lm', 'cropped_landmark_{}_{}.csv'.format(mode, img_size))
+        print('Save cropped landmark to {}\n'.format(save_csv))
         df = pd.DataFrame(new_lms, columns=header)
         df.to_csv(save_csv, index=False)
         return img_dir
