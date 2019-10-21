@@ -26,7 +26,10 @@ If you want to process images from scratch<br />
 *--data_dir* is the path of unprocessed images.<br />
 *--save_dir* is the path to save output.<br />
 *--img_size* is the cropped images size.<br />
-![crop_sample](/fig/sample.png)<br />
+
+<p align="center">
+<img src="/fig/sample.png" alt="crop_sample" width="500"/>
+</p>
 
 ### Manually filter landmark
 If you already detected the landmark, or want to fliter landmark by manual<br />
@@ -34,7 +37,11 @@ add *--lm_csv [csv_dri]*, then you can start from filter<br />
 <code>python main.py --data_dir [image_dir] --save_dir [save_dir] --img_size 128 --manual</code><br />
 
 It will show the following window<br />
-![filter_lm](/fig/filter_lm.png)<br />
+
+<p align="center">
+<img src="/fig/filter_lm.png" alt="filter_lm" width="500"/>
+</p>
+
 then check the terminal, you will see<br />
 <code>pick the correct landmark up (r to remove all, s to save a temporary file):</code><br />
 - Input the index you want to preserve.<br />
@@ -47,4 +54,7 @@ If you just want to filter image<br />
 *--cropped_dir* is the path of cropped images.<br />
 *--black_threshold* is the ratio of the black area and image.<br />
 *--blur_threshold* is the Laplacian of image, the lower value indicates a blurry image.<br />
-![filter_img](/fig/filter_img.png)<br />
+
+<p align="center">
+<img src="/fig/filter_img.png" alt="filter_img" width="500"/>
+</p>
