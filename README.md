@@ -36,7 +36,7 @@ Automatically filtering landmarks is to select the largest face on the image.<br
 If you want to fliter landmark by manual (add *--lm_csv [csv_dri]*, if you have already detected landmark)<br />
 <code>python main.py --data_dir [image_dir] --save_dir [save_dir] --img_size 128 --manual</code><br />
 
-It will show the following window<br />
+It will show the following window (Use spyder is easier to operate)<br />
 
 <p align="center">
 <img src="/fig/filter_lm.png" alt="filter_lm" width="500"/>
