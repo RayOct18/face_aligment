@@ -1,15 +1,11 @@
 import os
 import pandas as pd
-from PIL import Image, ImageOps
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from face_landmark import FaceLandmarksSet
 import numpy as np
 import datetime
-import math
-import csv
-import sys
 import cv2
 from skimage import transform as trans
 
@@ -21,9 +17,13 @@ class ImageProcessing():
             os.makedirs(self.save_dir)
         self.csv_dir = csv_dir
         self.face_dataset = FaceLandmarksSet(csv_file=csv_dir, root_dir=data_dir)
+        self.date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M")
         self.pad_size = 100
 
-    def crop(self, img_size, scale):
+    def crop(self, img_size, mode):
+        img_dir = os.path.join(self.save_dir, 'crop_images_{}_{}'.format(mode, img_size))
+        if not os.path.exists(img_dir):
+            os.makedirs(img_dir)
         new_lms = []
         header = ['sub_folder', 'image_name', 'detect_number']
         for i in range(68):
@@ -35,25 +35,29 @@ class ImageProcessing():
             image = cv2.copyMakeBorder(sample['image'], self.pad_size, self.pad_size, self.pad_size, self.pad_size,
                                        cv2.BORDER_CONSTANT, value=0)
 
-            # warped, M = self.affine_trans(image, lm, img_size, scale)
-
-            M, pose_index = self.estimate_norm(lm, img_size)
+            five_lm = self.five_point(lm)
+            M, pose_index = self.estimate_norm(five_lm, img_size, mode)
             warped = cv2.warpAffine(image,M, (img_size, img_size))
 
             cropped_lm = self.cropped_lm(M, lm)
-            # cropped_lm[:,1] += 20
-            self.show_landmarks(warped, cropped_lm)
+            # self.show_landmarks(warped, cropped_lm)
             info = [sample['folder'], sample['name'], sample['detect_num']]
             cropped_lm = cropped_lm.reshape(136).tolist()
             info += cropped_lm
             new_lms.append(info)
-            save_name = os.path.join(self.save_dir, sample['folder'], sample['name'])
+            save_name = os.path.join(img_dir, sample['folder'])
+            if not os.path.exists(save_name):
+                os.makedirs(save_name)
+            save_name = os.path.join(save_name, sample['name'])
             cv2.imwrite(save_name, warped)
 
-        save_lm = os.path.split(self.save_dir)[0]
-        save_csv = os.path.join(save_lm, 'lm', 'cropped_landmark_{}-{}.csv'.format(scale, img_size))
+        save_lm = os.path.join(self.save_dir, 'lm')
+        if not os.path.exists(save_lm):
+            os.makedirs(save_lm)
+        save_csv = os.path.join(save_lm, 'cropped_landmark_{}_{}.csv'.format(mode, img_size))
         df = pd.DataFrame(new_lms, columns=header)
         df.to_csv(save_csv, index=False)
+        return img_dir
 
     @staticmethod
     def cropped_lm(H, lm):
@@ -73,13 +77,54 @@ class ImageProcessing():
         plt.pause(0.0001)  # pause a bit so that plots are updated
         plt.close()
     
-    def estimate_norm(self, lm, img_size):
+    def estimate_norm(self, lm, img_size, mode):
+        src1 = np.array([
+             [51.642,50.115],
+             [57.617,49.990],
+             [35.740,69.007],
+             [51.157,89.050],
+             [57.025,89.702]], dtype=np.float32)
+        #<--left 
+        src2 = np.array([
+            [45.031,50.118],
+            [65.568,50.872],
+            [39.677,68.111],
+            [45.177,86.190],
+            [64.246,86.758]], dtype=np.float32)
+
+        #---frontal
+        src3 = np.array([
+            [39.730,51.138],
+            [72.270,51.138],
+            [56.000,68.493],
+            [42.463,87.010],
+            [69.537,87.010]], dtype=np.float32)
+
+        #-->right
+        src4 = np.array([
+            [46.845,50.872],
+            [67.382,50.118],
+            [72.737,68.111],
+            [48.167,86.758],
+            [67.236,86.190]], dtype=np.float32)
+
+        #-->right profile
+        src5 = np.array([
+            [54.796,49.990],
+            [60.771,50.115],
+            [76.673,69.007],
+            [55.388,89.702],
+            [61.257,89.050]], dtype=np.float32)
+
+        src = np.array([src1,src2,src3,src4,src5])
         tform = trans.SimilarityTransform()
-        lmk_tran = np.insert(lm, 2, values=np.ones(68), axis=1)
+        lmk_tran = np.insert(lm, 2, values=np.ones(5), axis=1)
         min_M = []
         min_index = []
         min_error = float('inf') 
-        src_map = self.src_map()*img_size/128
+
+        src_map = src * (img_size/120) if mode == 'whole' else src * (img_size/112)
+
         for i in np.arange(src_map.shape[0]):
             tform.estimate(lm, src_map[i])
             M = tform.params[0:2,:]
@@ -94,23 +139,7 @@ class ImageProcessing():
         return min_M, min_index
 
     @staticmethod
-    def src_map():
-        src = np.loadtxt('src_whole.txt', delimiter=',')
-        src_list = []
-        for i in np.arange(src.shape[0]):
-            tmp = src[i,:].reshape(68,2)
-            src_list.append(tmp)
-        src_map = np.array(src_list)
-        return src_map
-
-    def affine_trans(self, image, lm, img_size, scale, landmarkIndices=[39, 42, 57]):
-        TPL_MIN, TPL_MAX = np.min(lm, axis=0), np.max(lm, axis=0)
-        MINMAX_TEMPLATE = (lm - TPL_MIN) / (TPL_MAX - TPL_MIN)
-        npLandmarks = np.float32(lm)
-        npLandmarkIndices = np.array(landmarkIndices)
-        H = cv2.getAffineTransform(npLandmarks[npLandmarkIndices],
-                                   np.float32(img_size * MINMAX_TEMPLATE[npLandmarkIndices]*scale + img_size*(1-scale)/2))
-        thumbnail = cv2.warpAffine(image, H, (img_size, img_size))
-        # cv2.imshow('Image', thumbnail)
-        # cv2.waitKey(0)
-        return thumbnail, H
+    def five_point(lm):
+        left_eye = np.mean(lm[36:42], axis=0)
+        right_eye = np.mean(lm[42:47], axis=0)
+        return np.array([left_eye, right_eye, lm[30], lm[48], lm[54]])

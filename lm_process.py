@@ -9,6 +9,7 @@ from face_landmark import FaceLandmarksSet
 import datetime
 import math
 import copy
+import util
 
 
 class LandmarkProcessing():
@@ -45,7 +46,7 @@ class LandmarkProcessing():
                             err_writer.write(no_pre)
                             continue
 
-                        sub_folder = self.get_subfolder(fullname, self.data_dir)
+                        sub_folder = util.get_subfolder(fullname, self.data_dir)
                         print('detect {} face\n'.format(len(preds)))
             
                         for i in range(len(preds)):
@@ -81,7 +82,7 @@ class LandmarkProcessing():
             # start_index
             for file_num, filename in enumerate(files[start_index:]):
                 fullname = os.path.join(root, filename)
-                sub_folder = self.get_subfolder(fullname, self.data_dir)
+                sub_folder = util.get_subfolder(fullname, self.data_dir)
                 lm_index = self.face_dataset.multi_face_landmark(filename, sub_folder)
                 multi_lm = len(lm_index)
                 if multi_lm > 1:
@@ -192,10 +193,3 @@ class LandmarkProcessing():
             temp = pd.read_csv(file)
             lm_data = lm_data.append(temp)
         return lm_data
-
-    @staticmethod
-    def get_subfolder(fullname, dir):
-        sub_folder = fullname.split(dir)[-1].split(os.sep)
-        sub_folder = sub_folder[1:-1] if len(sub_folder) != 2 else ['']
-        sub_folder = os.path.join(*sub_folder)
-        return sub_folder

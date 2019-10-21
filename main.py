@@ -2,28 +2,45 @@ import os
 import argparse
 import lm_process
 import img_process
+import img_filter
 
 def main(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    # LMP = lm_process.LandmarkProcessing(args.data_dir, args.save_dir)
+    if args.cropped_dir is not None:
+        crop_dir = args.cropped_dir
+    else:
+        LMP = lm_process.LandmarkProcessing(args.data_dir, args.save_dir)
+        if args.lm_csv is None and args.lm_filtered is False:
+            lm_csv = LMP.detector()
+            fliter_lm = LMP.filter(lm_csv, args.manual)
+        elif args.lm_csv is not None and args.lm_filtered is False:
+            fliter_lm = LMP.filter(args.lm_csv, args.manual)
+        elif args.lm_csv is not None and args.lm_filtered is True:
+            fliter_lm = args.lm_csv
 
-    # if args.lm_csv is None:
-    #     lm_csv = LMP.detector()
-    #     fliter_lm = LMP.filter(lm_csv, args.manual)
-    # else:
-    #     fliter_lm = LMP.filter(args.lm_csv, args.manual)
+        IMP = img_process.ImageProcessing(args.data_dir, args.save_dir, fliter_lm)
+        crop_dir = IMP.crop(args.img_size, args.crop_mode)
+        
+    if args.img_filtered:
+        img_filter.black_filter(crop_dir, args.black_threshold, args.img_size, args.crop_mode)
+        img_filter.blur_filter(crop_dir, args.blur_threshold, args.img_size, args.crop_mode)
 
-    csv_dir = R'G:\GoogleDrive\Learning\Coding\python\test\lm\combine_landmark.csv'
-    IMP = img_process.ImageProcessing(args.data_dir, args.save_dir, csv_dir)
-    IMP.crop(128, 0.65)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default=R'G:\GoogleDrive\Learning\Coding\python\test\images')
-    parser.add_argument('--save_dir', type=str, default=R'G:\GoogleDrive\Learning\Coding\python\test')
-    parser.add_argument('--lm_csv', type=str, default=R'G:\GoogleDrive\Learning\Coding\python\test\lm\landmark_20191020-1646.csv')
-    parser.add_argument('--manual', action='store_true', default=True)
+    parser.add_argument('--data_dir', type=str, default=R'G:\database\age\APPA-REAL\raw\appa-real-release\images_raw')
+    parser.add_argument('--save_dir', type=str, default=R'G:\database\age\APPA-REAL\crop')
+    parser.add_argument('--lm_csv', type=str, default=R'G:\database\age\APPA-REAL\lm\appa-real_landmark_20190903-1203_test.csv')
+    parser.add_argument('--cropped_dir', type=str, default=None)
+    parser.add_argument('--lm_filtered', action='store_true', default=True)
+    parser.add_argument('--img_filtered', action='store_true', default=True)
+    parser.add_argument('--manual', action='store_true', default=False)
+    parser.add_argument('--crop_mode', type=str, default='origin', help='whole or origin')
+    parser.add_argument('--img_size', type=int, default=128, help='cropping size')
+    parser.add_argument('--black_threshold', type=float, default=60.0, help='cropping size')
+    parser.add_argument('--blur_threshold', type=float, default=10.0, help='cropping size')
+
     args = parser.parse_args()
     main(args)

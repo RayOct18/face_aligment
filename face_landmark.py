@@ -22,7 +22,7 @@ class FaceLandmarksSet(object):
         img_name = self.landmarks_frame.iloc[idx, 1]
         detect_number = self.landmarks_frame.iloc[idx, 2]
         sub_folder = self.landmarks_frame.iloc[idx, 0]
-        sub_folder = '' if np.isnan(sub_folder) else sub_folder
+        sub_folder = '' if pd.isnull(sub_folder) else sub_folder
         img_root = os.path.join(self.root_dir, sub_folder, img_name)
         image = cv2.imread(img_root)
         landmarks = self.landmarks_frame.iloc[idx, 3:].values
