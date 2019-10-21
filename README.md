@@ -1,5 +1,5 @@
 # Face Alignment
-A tool for align face.
+A tool for aligning faces.
 
 ## Environment
 * Windows
@@ -32,8 +32,8 @@ If you want to process images from scratch<br />
 </p>
 
 ### Manually filter landmark
-If you already detected the landmark, or want to fliter landmark by manual<br />
-add *--lm_csv [csv_dri]*, then you can start from filter<br />
+Automatically filtering landmarks is to select the largest face on the image.<br />
+If you want to fliter landmark by manual (add *--lm_csv [csv_dri]*, if you have already detected landmark)<br />
 <code>python main.py --data_dir [image_dir] --save_dir [save_dir] --img_size 128 --manual</code><br />
 
 It will show the following window<br />
@@ -45,8 +45,8 @@ It will show the following window<br />
 then check the terminal, you will see<br />
 <code>pick the correct landmark up (r to remove all, s to save a temporary file):</code><br />
 - Input the index you want to preserve.<br />
-- If you don't want any landmark you can input `r`. <br />
-- If you want save file temporary just input `s`, when you start again, it will start with the index you ended.
+- If you don't want to preserve any landmark you can input `r`. <br />
+- If you want to save the file temporary, just input `s`, and when you start it again, it will start with the index you ended.
 
 ### Image filter
 If you just want to filter image<br />
