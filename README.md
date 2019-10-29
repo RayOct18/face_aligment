@@ -1,5 +1,5 @@
 # Face Alignment
-A tool for align face.
+A tool for aligning faces.
 
 ## Environment
 * Windows
@@ -26,20 +26,27 @@ If you want to process images from scratch<br />
 *--data_dir* is the path of unprocessed images.<br />
 *--save_dir* is the path to save output.<br />
 *--img_size* is the cropped images size.<br />
-![crop_sample](/fig/sample.png)<br />
+
+<p align="center">
+<img src="/fig/sample.png" alt="crop_sample" width="500"/>
+</p>
 
 ### Manually filter landmark
-If you already detected the landmark, or want to fliter landmark by manual<br />
-add *--lm_csv [csv_dri]*, then you can start from filter<br />
+Automatically filtering landmarks is to select the largest face on the image.<br />
+If you want to fliter landmark by manual (add *--lm_csv [csv_dri]*, if you have already detected landmark)<br />
 <code>python main.py --data_dir [image_dir] --save_dir [save_dir] --img_size 128 --manual</code><br />
 
-It will show the following window<br />
-![filter_lm](/fig/filter_lm.png)<br />
+It will show the following window (Use spyder is easier to operate)<br />
+
+<p align="center">
+<img src="/fig/filter_lm.png" alt="filter_lm" width="500"/>
+</p>
+
 then check the terminal, you will see<br />
 <code>pick the correct landmark up (r to remove all, s to save a temporary file):</code><br />
 - Input the index you want to preserve.<br />
-- If you don't want any landmark you can input `r`. <br />
-- If you want save file temporary just input `s`, when you start again, it will start with the index you ended.
+- If you don't want to preserve any landmark you can input `r`. <br />
+- If you want to save the file temporary, just input `s`, and when you start it again, it will start with the index you ended.
 
 ### Image filter
 If you just want to filter image<br />
@@ -47,4 +54,7 @@ If you just want to filter image<br />
 *--cropped_dir* is the path of cropped images.<br />
 *--black_threshold* is the ratio of the black area and image.<br />
 *--blur_threshold* is the Laplacian of image, the lower value indicates a blurry image.<br />
-![filter_img](/fig/filter_img.png)<br />
+
+<p align="center">
+<img src="/fig/filter_img.png" alt="filter_img" width="500"/>
+</p>
