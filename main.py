@@ -37,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('--lm_filtered', action='store_true', default=False, help='filter landmark or not')
     parser.add_argument('--img_filtered', action='store_true', default=True, help='filter images or not')
     parser.add_argument('--manual', action='store_true', default=False, help='filter landmark by manual')
-    parser.add_argument('--crop_mode', type=str, default='origin', help='whole or origin')
+    parser.add_argument('--crop_mode', type=str, default='whole', help='whole or origin')
     parser.add_argument('--img_size', type=int, default=128, help='cropping size')
     parser.add_argument('--black_threshold', type=float, default=60.0, help='ratio of black area')
     parser.add_argument('--blur_threshold', type=float, default=10.0, help='ratio of blur')

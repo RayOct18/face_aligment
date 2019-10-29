@@ -37,7 +37,7 @@ class FaceLandmarksSet(object):
         img_index = np.where(img_name == ori_img)[0]
         lm_index = []
         for i in img_index:
-            sub = '' if np.isnan(sub_folder[i]) else sub_folder[i]
+            sub = '' if pd.isnull(sub_folder[i]) else sub_folder[i]
             if sub == ori_sub:
                 lm_index.append(i)
         return lm_index
