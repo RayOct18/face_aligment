@@ -12,7 +12,7 @@ class FaceLandmarksSet(object):
             root_dir (string): Directory with all the images.
 
         """
-        self.landmarks_frame = pd.read_csv(csv_file)
+        self.landmarks_frame = pd.read_csv(csv_file, dtype=str)
         self.root_dir = root_dir
 
     def __len__(self):
