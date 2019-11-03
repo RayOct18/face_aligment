@@ -105,10 +105,11 @@ class LandmarkProcessing():
 
     def auto_filter(self, lm_index, fullname, lm_data):
         covs = []
-        means = []
+        points_dis = []
         for idx in lm_index:
             sample = self.face_dataset[idx]
             landmarks = sample['landmarks']
+            img_size = sample['image'].shape
             distance = []
             points = [0,16,17,21,22,26,27,30,31,35,36,41,42,47,48,67]
             for i in range(8):
@@ -117,15 +118,24 @@ class LandmarkProcessing():
                     distance.append(dis)
             cov = np.std(distance)/np.mean(distance)
             covs.append(cov)
-            means.append(np.mean(landmarks))
+
+            lm_temp = copy.deepcopy(landmarks)
+            lm_temp[:,0][lm_temp[:,0]<0] = 0
+            lm_temp[:,1][lm_temp[:,1]<0] = 0
+            lm_temp[:,0][lm_temp[:,0]>img_size[0]] = img_size[0]
+            lm_temp[:,1][lm_temp[:,1]>img_size[1]] = img_size[1]
+            horizontal = math.sqrt((lm_temp[16, 0] - lm_temp[0, 0])**2 + (lm_temp[16, 1] - lm_temp[0, 1])**2)
+            vertical = math.sqrt((lm_temp[28, 0] - lm_temp[9, 0])**2 + (lm_temp[28, 1] - lm_temp[9, 1])**2)
+            points_dis.append(horizontal + vertical)
+
         covs = np.array(covs)
-        means = np.array(means)
-        means[covs<0.32] = 0
-        means[covs>0.74] = 0
-        if np.sum(means) == 0:
+        points_dis = np.array(points_dis)
+        points_dis[covs<0.32] = 0
+        points_dis[covs>0.74] = 0
+        if np.sum(points_dis) == 0:
             lm_data.drop(lm_index, inplace=True)
         else:
-            save_idx = np.argmax(means)
+            save_idx = np.argmax(points_dis)
             lm_index.pop(save_idx)
             lm_data.drop(lm_index, inplace=True)
         print('{}'.format(fullname))
